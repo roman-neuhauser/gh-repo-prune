@@ -1,0 +1,26 @@
+=======================================================================
+                             gh-repo-prune
+=======================================================================
+-----------------------------------------------------------------------
+                Prune dead branches from a github repo
+-----------------------------------------------------------------------
+
+Overview
+========
+
+gh-repo-prune outputs a list of commands which, when run, will
+delete from a repository at github.com all branches which
+are not backing any open pull request.
+
+See the top of the script for a list of exceptions.
+
+
+Install
+=======
+
+::
+
+  npm install -g coffee-script
+  git clone https://github.com/roman-neuhauser/gh-repo-prune.git
+  cd gh-repo-prune
+  ./gh-repo-prune <oauth-token> <account>/<repo>

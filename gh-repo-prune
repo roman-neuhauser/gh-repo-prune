@@ -1,0 +1,76 @@
+#!/usr/bin/env coffee
+
+EXCLUDED_BRANCHES = [
+  'master'
+  /^onsite_\d_\d(_\d)?$/
+]
+
+unless process.argv.length == 4
+  do ->
+    path = require 'path'
+    self = path.basename process.argv[1]
+    process.stderr.write """
+      Usage: #{self} <oauth-token> <account>/<repo>
+
+      #{self} outputs a list of commands which, when run, will
+      delete from a repository at github.com all branches which
+      are not backing any open pull request.
+
+      See the top of the script for a list of exceptions.
+
+    """
+    process.exit 1
+
+fs = require 'fs'
+https = require 'https'
+
+token  = process.argv[2]
+ghrepo = process.argv[3]
+
+keep = (prs) -> (br) ->
+  if br in prs
+    return true
+  for excl in EXCLUDED_BRANCHES
+    if excl == br
+      return true
+    if excl instanceof RegExp and excl.test br
+      return true
+  return false
+
+done = do ->
+  v = {}
+  (name, list) ->
+    v[name] = list
+    return unless v.repo and v.prs and v.brs
+    kept = keep v.prs
+    repo = v.repo
+
+    for br in v.brs
+      unless kept br.name
+        console.log "# git branch #{br.name} #{br.sha}"
+        console.log "git push #{repo} :#{br.name}"
+
+ghapi = (path, on_end) ->
+  htget path, (rsp) ->
+    rsp.setEncoding 'utf8'
+    json = ''
+    rsp.on 'data', (chunk) -> json += chunk
+    rsp.on 'end', -> on_end JSON.parse json
+
+htget = (path, on_response) ->
+  opts =
+    hostname: 'api.github.com'
+    path: "/repos/#{ghrepo}#{path}"
+    headers:
+      authorization: "token #{token}"
+  https.get opts, on_response
+
+ghapi '', (data) ->
+  done 'repo', data.ssh_url
+
+ghapi '/pulls?state=open', (data) ->
+  done 'prs', (pr.head.ref for pr in data)
+
+ghapi '/branches', (data) ->
+  done 'brs', (name: br.name, sha: br.commit.sha for br in data)
+
