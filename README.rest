@@ -22,5 +22,12 @@ Install
 
   npm install -g coffee-script
   git clone https://github.com/roman-neuhauser/gh-repo-prune.git
-  cd gh-repo-prune
-  ./gh-repo-prune <oauth-token> <account>/<repo>
+
+Use
+===
+
+::
+
+  .../gh-repo-prune <oauth-token> <account>/<repo> > output
+  # review the output
+  sh output
