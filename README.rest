@@ -14,6 +14,17 @@ are not backing any open pull request.
 
 See the top of the script for a list of exceptions.
 
+The script uses the Github HTTP API to assemble the lists
+of branches and pull requests, and emits commands which assume
+`git(1)` and SSH access to github.com.
+
+Synopsis
+========
+
+::
+
+  gh-repo-prune <oauth-token> <account>/<repo> | sh
+
 
 Install
 =======
@@ -23,11 +34,22 @@ Install
   npm install -g coffee-script
   git clone https://github.com/roman-neuhauser/gh-repo-prune.git
 
+
 Use
 ===
 
-::
+#. Create a new *Personal API Access Token*
+   at https://github.com/settings/applications.
+#. Run `gh-repo-prune` and store its output in a file: ::
 
-  .../gh-repo-prune <oauth-token> <account>/<repo> > output
-  # review the output
-  sh output
+    .../gh-repo-prune <oauth-token> <account>/<repo> > output
+
+#. Review said output to verify that you're not going to
+   remove branches you didn't mean to!
+   The output includes commented-out git branch commands
+   to recreate dropped branches.
+#. Run it: ::
+
+    sh output
+
+Done!
